@@ -1728,8 +1728,21 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
 	POOL_SENT_MESSAGE *msg;
 	POOL_SESSION_CONTEXT *session_context;
 	POOL_QUERY_CONTEXT *query_context;
+    POOL_PENDING_MESSAGE *pmsg;
 
 	bool		nowait;
+
+
+    if (SL_MODE)
+	{
+		/* Add pending message */
+		pmsg = pool_pending_message_create('S', 0, NULL);
+		pool_pending_message_add(pmsg);
+		pool_pending_message_free_pending_message(pmsg);
+		pool_unset_query_in_progress();
+	} else if (!pool_is_query_in_progress())
+        pool_set_query_in_progress();
+
 
 	/* Get session context */
 	session_context = pool_get_session_context(false);
@@ -1742,8 +1755,17 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
     if (!msg)
         msg = pool_get_sent_message('P', contents + 1, POOL_SENT_MESSAGE_CREATED);
     if (!msg)
-        return SimpleForwardToBackend('S', frontend, backend, len, contents);
-
+    {
+        ereport(LOG,
+            (errmsg("Sync: no existing context found"),
+             errdetail("statement: \"%s\"", contents + 1)));
+        SimpleForwardToBackend('S', frontend, backend, len, contents);
+        if (SL_MODE)
+        {
+            pool_set_suspend_reading_from_frontend();
+        }
+        return POOL_CONTINUE;
+    }
 	query_context = msg->query_context;
 
 	if (query_context == NULL)
@@ -1766,18 +1788,9 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
 
     if (SL_MODE)
 	{
-		POOL_PENDING_MESSAGE *pmsg;
-
-		/* Add pending message */
-		pmsg = pool_pending_message_create('S', 0, NULL);
 		pool_pending_message_dest_set(pmsg, query_context);
 		pool_pending_message_query_set(pmsg, query_context);
-		pool_pending_message_add(pmsg);
-		pool_pending_message_free_pending_message(pmsg);
-
-		pool_unset_query_in_progress();
-	} else if (!pool_is_query_in_progress())
-        pool_set_query_in_progress();
+	}
 
 	pool_extended_send_and_wait(query_context, "S", len, contents, 1, MAIN_NODE_ID, nowait);
 	pool_extended_send_and_wait(query_context, "S", len, contents, -1, MAIN_NODE_ID, nowait);
