@@ -1733,6 +1733,14 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
 	bool		nowait;
 
 
+	/* Get session context */
+	session_context = pool_get_session_context(false);
+
+    if (pool_config->log_client_messages)
+        ereport(LOG,
+                (errmsg("Sync message from frontend."),
+                 errdetail("statement: \"%s\"", contents + 1)));
+
     if (SL_MODE)
 	{
 		/* Add pending message */
@@ -1743,28 +1751,21 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
 	} else if (!pool_is_query_in_progress())
         pool_set_query_in_progress();
 
-
-	/* Get session context */
-	session_context = pool_get_session_context(false);
-
-    if (pool_config->log_client_messages)
-        ereport(LOG,
-                (errmsg("Sync message from frontend."),
-                 errdetail("statement: \"%s\"", contents + 1)));
     msg = pool_get_sent_message('Q', contents + 1, POOL_SENT_MESSAGE_CREATED);
     if (!msg)
         msg = pool_get_sent_message('P', contents + 1, POOL_SENT_MESSAGE_CREATED);
     if (!msg)
     {
+        POOL_STATUS status;
         ereport(LOG,
             (errmsg("Sync: no existing context found"),
              errdetail("statement: \"%s\"", contents + 1)));
-        SimpleForwardToBackend('S', frontend, backend, len, contents);
+        status = SimpleForwardToBackend('S', frontend, backend, len, contents);
         if (SL_MODE)
         {
             pool_set_suspend_reading_from_frontend();
         }
-        return POOL_CONTINUE;
+        return status;
     }
 	query_context = msg->query_context;
 
