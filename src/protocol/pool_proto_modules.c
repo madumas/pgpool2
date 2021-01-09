@@ -1721,6 +1721,79 @@ Describe(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
 	return POOL_CONTINUE;
 }
 
+POOL_STATUS
+Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
+		 int len, char *contents)
+{
+	POOL_SENT_MESSAGE *msg;
+	POOL_SESSION_CONTEXT *session_context;
+	POOL_QUERY_CONTEXT *query_context;
+
+	bool		nowait;
+
+	/* Get session context */
+	session_context = pool_get_session_context(false);
+
+    if (pool_config->log_client_messages)
+        ereport(LOG,
+                (errmsg("Sync message from frontend."),
+                 errdetail("statement: \"%s\"", contents + 1)));
+    msg = pool_get_sent_message('Q', contents + 1, POOL_SENT_MESSAGE_CREATED);
+    if (!msg)
+        msg = pool_get_sent_message('P', contents + 1, POOL_SENT_MESSAGE_CREATED);
+    if (!msg)
+        return SimpleForwardToBackend('S', frontend, backend, len, contents);
+
+	query_context = msg->query_context;
+
+	if (query_context == NULL)
+		ereport(FATAL,
+				(return_code(2),
+				 errmsg("unable to execute Sync"),
+				 errdetail("unable to get the query context")));
+
+	session_context->query_context = query_context;
+
+	/*
+	 * Calling pool_where_to_send here is dangerous because the node
+	 * parse/bind has been sent could be change by pool_where_to_send() and it
+	 * leads to "portal not found" etc. errors.
+	 */
+	ereport(DEBUG1,
+			(errmsg("Sync: waiting for main node completing the query")));
+
+	nowait = (SL_MODE ? true : false);
+
+    if (SL_MODE)
+	{
+		POOL_PENDING_MESSAGE *pmsg;
+
+		/* Add pending message */
+		pmsg = pool_pending_message_create('S', 0, NULL);
+		pool_pending_message_dest_set(pmsg, query_context);
+		pool_pending_message_query_set(pmsg, query_context);
+		pool_pending_message_add(pmsg);
+		pool_pending_message_free_pending_message(pmsg);
+
+		pool_unset_query_in_progress();
+	} else if (!pool_is_query_in_progress())
+        pool_set_query_in_progress();
+
+	pool_extended_send_and_wait(query_context, "S", len, contents, 1, MAIN_NODE_ID, nowait);
+	pool_extended_send_and_wait(query_context, "S", len, contents, -1, MAIN_NODE_ID, nowait);
+
+    if (SL_MODE)
+    {
+        /*
+         * From now on suspend to read from frontend until we receive
+         * ready for query message from backend.
+         */
+        pool_set_suspend_reading_from_frontend();
+    }
+
+	return POOL_CONTINUE;
+}
+
 
 POOL_STATUS
 Close(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
@@ -2703,27 +2776,7 @@ ProcessFrontendResponse(POOL_CONNECTION * frontend,
 			if (pool_is_ignore_till_sync())
 				pool_unset_ignore_till_sync();
 
-			if (SL_MODE)
-			{
-				POOL_PENDING_MESSAGE *msg;
-
-				pool_unset_query_in_progress();
-				msg = pool_pending_message_create('S', 0, NULL);
-				pool_pending_message_add(msg);
-				pool_pending_message_free_pending_message(msg);
-			}
-			else if (!pool_is_query_in_progress())
-				pool_set_query_in_progress();
-			status = SimpleForwardToBackend(fkind, frontend, backend, len, contents);
-
-			if (SL_MODE)
-			{
-				/*
-				 * From now on suspend to read from frontend until we receive
-				 * ready for query message from backend.
-				 */
-				pool_set_suspend_reading_from_frontend();
-			}
+			status = Sync(frontend, backend, len, contents);
 			break;
 
 		case 'F':				/* FunctionCall */
