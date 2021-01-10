@@ -1736,7 +1736,7 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
     if (pool_config->log_client_messages)
         ereport(LOG,
                 (errmsg("Sync message from frontend."),
-                 errdetail("statement: \"%s\"", contents + 1)));
+                 errdetail("statement: \"%s\"", contents)));
 
     if (SL_MODE)
 	{
@@ -2917,8 +2917,13 @@ ProcessBackendResponse(POOL_CONNECTION * frontend,
 		return POOL_CONTINUE;
 	}
 
+ereport(DEBUG1,
+            (errmsg("ProcessBackendResponse"),
+             errdetail("pre-read_kind")));
 	read_kind_from_backend(frontend, backend, &kind);
-
+ereport(DEBUG1,
+            (errmsg("ProcessBackendResponse"),
+             errdetail("post-read_kind")));
 	/*
 	 * Sanity check
 	 */
