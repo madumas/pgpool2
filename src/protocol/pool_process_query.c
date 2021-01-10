@@ -3215,6 +3215,7 @@ read_kind_from_backend(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backen
 	{
 	ereport(DEBUG1, (errmsg("read_kind: step2")));
 		msg = pool_pending_message_head_message();
+	ereport(DEBUG1, (errmsg("read_kind: step2a")));
 		previous_message = pool_pending_message_get_previous_message();
 	ereport(DEBUG1, (errmsg("read_kind: step2b")));
 		if (!msg)
