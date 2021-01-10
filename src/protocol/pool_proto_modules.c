@@ -1748,17 +1748,17 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
 	} else if (!pool_is_query_in_progress())
         pool_set_query_in_progress();
 
-    msg = pool_get_sent_message('Q', contents, POOL_SENT_MESSAGE_CREATED);
+    msg = pool_get_sent_message('Q', contents+1, POOL_SENT_MESSAGE_CREATED);
     if (!msg)
-        msg = pool_get_sent_message('P', contents, POOL_SENT_MESSAGE_CREATED);
+        msg = pool_get_sent_message('P', contents+1, POOL_SENT_MESSAGE_CREATED);
     if (!msg)
-        msg = pool_get_sent_message('B', contents, POOL_SENT_MESSAGE_CREATED);
+        msg = pool_get_sent_message('B', contents+1, POOL_SENT_MESSAGE_CREATED);
     if (!msg)
     {
         POOL_STATUS status;
         ereport(LOG,
             (errmsg("Sync: no existing context found"),
-             errdetail("statement: \"%s\"", contents)));
+             errdetail("statement: \"%s\"", contents+1)));
         status = SimpleForwardToBackend('S', frontend, backend, len, contents);
         if (SL_MODE)
         {
@@ -1804,7 +1804,7 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
          * From now on suspend to read from frontend until we receive
          * ready for query message from backend.
          */
-        //pool_set_suspend_reading_from_frontend();
+        pool_set_suspend_reading_from_frontend();
     }
 
 	return POOL_CONTINUE;
@@ -1989,6 +1989,11 @@ ReadyForQuery(POOL_CONNECTION * frontend,
 	char	   *query = NULL;
 	bool		got_estate = false;
 
+    ereport(DEBUG1,
+        (errmsg("processing ReadyForQuery"),
+         errdetail("Start")));
+
+
 	/*
 	 * It is possible that the "ignore until sync is received" flag was set if
 	 * we send sync to backend and the backend returns error. Let's reset the
@@ -2160,7 +2165,7 @@ ReadyForQuery(POOL_CONNECTION * frontend,
 				return POOL_END;
 
 			TSTATE(backend, i) = kind;
-			ereport(DEBUG5,
+			ereport(DEBUG1,
 					(errmsg("processing ReadyForQuery"),
 					 errdetail("transaction state '%c'(%02x)", state, state)));
 
