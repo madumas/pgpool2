@@ -1753,7 +1753,7 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
         msg = pool_get_sent_message('P', contents+1, POOL_SENT_MESSAGE_CREATED);
     if (!msg)
         msg = pool_get_sent_message('B', contents+1, POOL_SENT_MESSAGE_CREATED);
-    if (1==1 || !msg)
+    if (!msg)
     {
         POOL_STATUS status;
         ereport(LOG,
@@ -2888,6 +2888,11 @@ ProcessBackendResponse(POOL_CONNECTION * frontend,
 {
 	int			status = POOL_CONTINUE;
 	char		kind;
+
+
+				ereport(DEBUG1,
+						(errmsg("ProcessBackendResponse"),
+						 errdetail("start")));
 
 	/* Get session context */
 	pool_get_session_context(false);

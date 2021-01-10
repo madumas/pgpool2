@@ -2125,7 +2125,7 @@ do_query(POOL_CONNECTION * backend, char *query, POOL_SELECT_RESULT * *result, i
 		switch (kind)
 		{
 			case 'Z':			/* Ready for query */
-				ereport(DEBUG5,
+				ereport(DEBUG1,
 						(errmsg("do_query: received READY FOR QUERY ('%c')", kind)));
 				if (!doing_extended)
 					return;
@@ -3599,7 +3599,7 @@ read_kind_from_backend(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backen
 					 errdetail("do not degenerate because it is likely caused by a delayed commit")));
 
 			if (SL_MODE && pool_is_doing_extended_query_message() && msg)
-				pool_pending_message_free_pending_message(msg);				
+				pool_pending_message_free_pending_message(msg);
 			return;
 		}
 		else if (max_count <= NUM_BACKENDS / 2.0)
