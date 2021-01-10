@@ -2798,6 +2798,9 @@ ProcessFrontendResponse(POOL_CONNECTION * frontend,
 				pool_unset_ignore_till_sync();
 
 			status = Sync(frontend, backend, len, contents);
+			ereport(DEBUG1,
+                    (errmsg("finished processing Sync"),
+                     errdetail("ok")));
 			break;
 
 		case 'F':				/* FunctionCall */
