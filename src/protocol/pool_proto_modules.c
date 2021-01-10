@@ -1748,17 +1748,15 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
 	} else if (!pool_is_query_in_progress())
         pool_set_query_in_progress();
 
-    msg = pool_get_sent_message('Q', contents+1, POOL_SENT_MESSAGE_CREATED);
+    msg = pool_get_sent_message('P', contents, POOL_SENT_MESSAGE_CREATED);
     if (!msg)
-        msg = pool_get_sent_message('P', contents+1, POOL_SENT_MESSAGE_CREATED);
-    if (!msg)
-        msg = pool_get_sent_message('B', contents+1, POOL_SENT_MESSAGE_CREATED);
+        msg = pool_get_sent_message('B', contents, POOL_SENT_MESSAGE_CREATED);
     if (!msg)
     {
         POOL_STATUS status;
         ereport(LOG,
             (errmsg("Sync: no existing context found"),
-             errdetail("statement: \"%s\"", contents+1)));
+             errdetail("statement: \"%s\"", contents)));
         status = SimpleForwardToBackend('S', frontend, backend, len, contents);
         if (SL_MODE)
         {
@@ -2890,9 +2888,9 @@ ProcessBackendResponse(POOL_CONNECTION * frontend,
 	char		kind;
 
 
-				ereport(DEBUG1,
-						(errmsg("ProcessBackendResponse"),
-						 errdetail("start")));
+    ereport(DEBUG1,
+            (errmsg("ProcessBackendResponse"),
+             errdetail("start")));
 
 	/* Get session context */
 	pool_get_session_context(false);
