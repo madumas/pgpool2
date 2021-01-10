@@ -1804,7 +1804,7 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
          * From now on suspend to read from frontend until we receive
          * ready for query message from backend.
          */
-        pool_set_suspend_reading_from_frontend();
+        //pool_set_suspend_reading_from_frontend();
     }
 
 	return POOL_CONTINUE;
