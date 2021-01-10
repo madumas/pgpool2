@@ -1733,9 +1733,6 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
 	bool		nowait;
 
 
-	/* Get session context */
-	session_context = pool_get_session_context(false);
-
     if (pool_config->log_client_messages)
         ereport(LOG,
                 (errmsg("Sync message from frontend."),
@@ -1744,22 +1741,24 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
     if (SL_MODE)
 	{
 		/* Add pending message */
+		pool_unset_query_in_progress();
 		pmsg = pool_pending_message_create('S', 0, NULL);
 		pool_pending_message_add(pmsg);
 		pool_pending_message_free_pending_message(pmsg);
-		pool_unset_query_in_progress();
 	} else if (!pool_is_query_in_progress())
         pool_set_query_in_progress();
 
-    msg = pool_get_sent_message('Q', contents + 1, POOL_SENT_MESSAGE_CREATED);
+    msg = pool_get_sent_message('Q', contents, POOL_SENT_MESSAGE_CREATED);
     if (!msg)
-        msg = pool_get_sent_message('P', contents + 1, POOL_SENT_MESSAGE_CREATED);
+        msg = pool_get_sent_message('P', contents, POOL_SENT_MESSAGE_CREATED);
+    if (!msg)
+        msg = pool_get_sent_message('B', contents, POOL_SENT_MESSAGE_CREATED);
     if (!msg)
     {
         POOL_STATUS status;
         ereport(LOG,
             (errmsg("Sync: no existing context found"),
-             errdetail("statement: \"%s\"", contents + 1)));
+             errdetail("statement: \"%s\"", contents)));
         status = SimpleForwardToBackend('S', frontend, backend, len, contents);
         if (SL_MODE)
         {
@@ -1775,6 +1774,9 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
 				 errmsg("unable to execute Sync"),
 				 errdetail("unable to get the query context")));
 
+
+	/* Get session context */
+	session_context = pool_get_session_context(false);
 	session_context->query_context = query_context;
 
 	/*
