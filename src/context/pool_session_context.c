@@ -167,7 +167,7 @@ pool_init_session_context(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * bac
 
 	/* Initialize temp tables */
 	pool_temp_tables_init();
-	
+
 #ifdef NOT_USED
 	/* Initialize preferred main node id */
 	pool_reset_preferred_main_node_id();
@@ -1326,6 +1326,8 @@ pool_pending_message_head_message(void)
 	POOL_PENDING_MESSAGE *m;
 	MemoryContext old_context;
 
+ereport(DEBUG1,	(errmsg("pool_pending_message_head_message - 1")));
+
 	if (!session_context)
 		ereport(ERROR,
 				(errmsg("pool_pending_message_head_message: session context is not initialized")));
@@ -1334,6 +1336,7 @@ pool_pending_message_head_message(void)
 	{
 		return NULL;
 	}
+	ereport(DEBUG1,	(errmsg("pool_pending_message_head_message - 2")));
 
 	old_context = MemoryContextSwitchTo(session_context->memory_context);
 
@@ -1345,6 +1348,7 @@ pool_pending_message_head_message(void)
 					pool_pending_message_type_to_string(message->type),
 					message->contents_len, message->query, message->statement, message->portal,
 					message->node_ids[0], message->node_ids[1])));
+ereport(DEBUG1,	(errmsg("pool_pending_message_head_message - 3")));
 
 	MemoryContextSwitchTo(old_context);
 	return message;
