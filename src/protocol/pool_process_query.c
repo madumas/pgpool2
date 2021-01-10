@@ -3215,7 +3215,7 @@ read_kind_from_backend(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backen
 		previous_message = pool_pending_message_get_previous_message();
 		if (!msg)
 		{
-			ereport(DEBUG5,
+			ereport(DEBUG1,
 					(errmsg("read_kind_from_backend: no pending message")));
 
 			/*
@@ -3279,7 +3279,7 @@ read_kind_from_backend(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backen
 
 	if (MAIN_REPLICA)
 	{
-		ereport(DEBUG5,
+		ereport(DEBUG1,
 				(errmsg("reading backend data packet kind"),
 				 errdetail("main node id: %d", MAIN_NODE_ID)));
 
@@ -3294,7 +3294,7 @@ read_kind_from_backend(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backen
 		{
 			*decided_kind = 'A';
 
-			ereport(DEBUG5,
+			ereport(DEBUG1,
 					(errmsg("reading backend data packet kind"),
 					 errdetail("received notification message for main node %d",
 							   MAIN_NODE_ID)));
@@ -3341,7 +3341,7 @@ read_kind_from_backend(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backen
 							 errdetail("kind == 0")));
 				}
 
-				ereport(DEBUG5,
+				ereport(DEBUG1,
 						(errmsg("reading backend data packet kind"),
 						 errdetail("backend:%d kind:'%c'", i, kind)));
 
@@ -3414,7 +3414,7 @@ read_kind_from_backend(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backen
 			kind_list[i] = 0;
 	}
 
-	ereport(DEBUG5,
+	ereport(DEBUG1,
 			(errmsg("read_kind_from_backend max_count:%f num_executed_nodes:%d",
 					max_count, num_executed_nodes)));
 
@@ -3749,7 +3749,7 @@ read_kind_from_backend(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backen
 			 (*decided_kind == 'D' || *decided_kind == 'E' || *decided_kind == 'N')) ||
 			(msg->type == POOL_DESCRIBE && *decided_kind == 't'))
 		{
-			ereport(DEBUG5,
+			ereport(DEBUG1,
 					(errmsg("read_kind_from_backend: pending message was left")));
 		}
 		else
@@ -3759,12 +3759,12 @@ read_kind_from_backend(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backen
 			if (msg->type == POOL_CLOSE)
 			{
 				/* Pending message will be pulled out in CloseComplete() */
-				ereport(DEBUG5,
+				ereport(DEBUG1,
 						(errmsg("read_kind_from_backend: pending message was not pulled out because message type is CloseComplete")));
 			}
 			else
 			{
-				ereport(DEBUG5,
+				ereport(DEBUG1,
 						(errmsg("read_kind_from_backend: pending message was pulled out")));
 				pending_message = pool_pending_message_pull_out();
 				pool_check_pending_message_and_reply(msg->type, *decided_kind);
