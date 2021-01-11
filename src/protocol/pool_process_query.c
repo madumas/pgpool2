@@ -3260,6 +3260,7 @@ read_kind_from_backend(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backen
 				ereport(DEBUG1,
 						(errmsg("read_kind_from_backend: sync pending message exists")));
 				session_context->query_context = msg->query_context;
+				pool_pending_message_set_previous_message(msg);
 				pool_unset_ignore_till_sync();
 				pool_unset_query_in_progress();
 			}
