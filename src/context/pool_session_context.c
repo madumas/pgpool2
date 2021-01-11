@@ -1339,9 +1339,15 @@ ereport(DEBUG1,	(errmsg("pool_pending_message_head_message - 1")));
 	ereport(DEBUG1,	(errmsg("pool_pending_message_head_message - 2")));
 
 	old_context = MemoryContextSwitchTo(session_context->memory_context);
+	ereport(DEBUG1,	(errmsg("pool_pending_message_head_message - 2.1")));
 
 	cell = list_head(session_context->pending_messages);
+	ereport(DEBUG1,	(errmsg("pool_pending_message_head_message - 2.2")));
+
 	m = (POOL_PENDING_MESSAGE *) lfirst(cell);
+	ereport(DEBUG1,	(errmsg("pool_pending_message_head_message - 2.3")));
+
+
 	message = copy_pending_message(m);
 	ereport(Elevel,
 			(errmsg("pool_pending_message_head_message: message type:%s message len:%d query:%s statement:%s portal:%s node_ids[0]:%d node_ids[1]:%d",
