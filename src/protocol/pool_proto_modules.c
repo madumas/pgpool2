@@ -1728,7 +1728,7 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
 	POOL_SENT_MESSAGE *msg;
 	POOL_SESSION_CONTEXT *session_context;
 	POOL_QUERY_CONTEXT *query_context;
-    POOL_PENDING_MESSAGE *pmsg;
+
 
 	bool		nowait;
 
@@ -1737,16 +1737,6 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
         ereport(LOG,
                 (errmsg("Sync message from frontend."),
                  errdetail("statement: \"%s\"", contents)));
-
-    if (SL_MODE)
-	{
-		/* Add pending message */
-		pool_unset_query_in_progress();
-		pmsg = pool_pending_message_create('S', 0, NULL);
-		pool_pending_message_add(pmsg);
-		pool_pending_message_free_pending_message(pmsg);
-	} else if (!pool_is_query_in_progress())
-        pool_set_query_in_progress();
 
     msg = pool_get_sent_message('P', contents, POOL_SENT_MESSAGE_CREATED);
     if (!msg)
@@ -1757,6 +1747,18 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
         ereport(LOG,
             (errmsg("Sync: no existing context found"),
              errdetail("statement: \"%s\"", contents)));
+        if (SL_MODE)
+        {
+            POOL_PENDING_MESSAGE *pmsg;
+            /* Add pending message */
+            pool_unset_query_in_progress();
+            pmsg = pool_pending_message_create('S', 0, NULL);
+            pool_pending_message_add(pmsg);
+            pool_pending_message_free_pending_message(pmsg);
+        } else if (!pool_is_query_in_progress())
+            pool_set_query_in_progress();
+
+
         status = SimpleForwardToBackend('S', frontend, backend, len, contents);
         if (SL_MODE)
         {
@@ -1789,8 +1791,16 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
 
     if (SL_MODE)
 	{
-		pool_pending_message_dest_set(pmsg, query_context);
-		pool_pending_message_query_set(pmsg, query_context);
+        POOL_PENDING_MESSAGE *pmsg;
+        /* Add pending message */
+        pmsg = pool_pending_message_create('S', 0, NULL);
+        pool_pending_message_dest_set(pmsg, query_context);
+        pool_pending_message_query_set(pmsg, query_context);
+        pool_pending_message_add(pmsg);
+        pool_pending_message_free_pending_message(pmsg);
+
+		pool_unset_query_in_progress();
+
 	}
 
 	pool_extended_send_and_wait(query_context, "S", len, contents, 1, MAIN_NODE_ID, nowait);
