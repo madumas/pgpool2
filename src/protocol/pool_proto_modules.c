@@ -1791,8 +1791,8 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
 	nowait = (SL_MODE ? true : false);
 
     pool_set_query_in_progress();
-    pool_extended_send_and_wait(query_context, "S", len, contents, 1, MAIN_NODE_ID, nowait);
-	pool_extended_send_and_wait(query_context, "S", len, contents, -1, MAIN_NODE_ID, nowait);
+    pool_extended_send_and_wait(query_context, "S", 0, NULL, 1, MAIN_NODE_ID, nowait);
+	pool_extended_send_and_wait(query_context, "S", 0, NULL, -1, MAIN_NODE_ID, nowait);
 
     if (SL_MODE)
 	{
