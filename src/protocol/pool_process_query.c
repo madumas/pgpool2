@@ -3255,7 +3255,7 @@ read_kind_from_backend(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backen
 		}
 		else
 		{
-			if (msg->type == POOL_SYNC)
+			/*if (msg->type == POOL_SYNC)
 			{
 				ereport(DEBUG1,
 						(errmsg("read_kind_from_backend: sync pending message exists")));
@@ -3266,21 +3266,21 @@ read_kind_from_backend(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backen
 				pool_unset_query_in_progress();
 			}
 			else
-			{
-				ereport(DEBUG5,
+			{*/
+				ereport(DEBUG1,
 						(errmsg("read_kind_from_backend: pending message exists. query context: %p",
 								msg->query_context)));
 				pool_pending_message_set_previous_message(msg);
 				pool_pending_message_query_context_dest_set(msg, msg->query_context);
 				session_context->query_context = msg->query_context;
 
-				ereport(DEBUG5,
+				ereport(DEBUG1,
 						(errmsg("read_kind_from_backend: where_to_send[0]:%d [1]:%d",
 								msg->query_context->where_to_send[0],
 								msg->query_context->where_to_send[1])));
 
 				pool_set_query_in_progress();
-			}
+			//}
 		}
 	}
 ereport(DEBUG5, (errmsg("read_kind: step2.5")));
