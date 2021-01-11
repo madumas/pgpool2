@@ -1732,6 +1732,8 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
 
 	bool		nowait;
 
+    /* Get session context */
+	session_context = pool_get_session_context(false);
 
     if (pool_config->log_client_messages)
         ereport(LOG,
@@ -1766,6 +1768,7 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
         }
         return status;
     }
+
 	query_context = msg->query_context;
 
 	if (query_context == NULL)
@@ -1775,8 +1778,6 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
 				 errdetail("unable to get the query context")));
 
 
-	/* Get session context */
-	session_context = pool_get_session_context(false);
 	session_context->query_context = query_context;
 
 	/*
@@ -1788,6 +1789,10 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
 			(errmsg("Sync: waiting for main node completing the query")));
 
 	nowait = (SL_MODE ? true : false);
+
+    pool_set_query_in_progress();
+    pool_extended_send_and_wait(query_context, "S", len, contents, 1, MAIN_NODE_ID, nowait);
+	pool_extended_send_and_wait(query_context, "S", len, contents, -1, MAIN_NODE_ID, nowait);
 
     if (SL_MODE)
 	{
@@ -1803,8 +1808,6 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
 
 	}
 
-	pool_extended_send_and_wait(query_context, "S", len, contents, 1, MAIN_NODE_ID, nowait);
-	pool_extended_send_and_wait(query_context, "S", len, contents, -1, MAIN_NODE_ID, nowait);
 
     if (SL_MODE)
     {
