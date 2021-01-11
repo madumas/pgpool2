@@ -710,7 +710,7 @@ pool_where_to_send(POOL_QUERY_CONTEXT * query_context, char *query, Node *node)
 					}
 				}
 			}
-			
+
 			/*
 			 * If a writing function call is used or replicate_select is true,
 			 * we prefer to send to all nodes.
