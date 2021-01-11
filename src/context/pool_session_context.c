@@ -1326,8 +1326,6 @@ pool_pending_message_head_message(void)
 	POOL_PENDING_MESSAGE *m;
 	MemoryContext old_context;
 
-ereport(DEBUG5,	(errmsg("pool_pending_message_head_message - 1")));
-
 	if (!session_context)
 		ereport(ERROR,
 				(errmsg("pool_pending_message_head_message: session context is not initialized")));
@@ -1336,30 +1334,17 @@ ereport(DEBUG5,	(errmsg("pool_pending_message_head_message - 1")));
 	{
 		return NULL;
 	}
-	ereport(DEBUG5,	(errmsg("pool_pending_message_head_message - 2")));
 
 	old_context = MemoryContextSwitchTo(session_context->memory_context);
-	ereport(DEBUG5,	(errmsg("pool_pending_message_head_message - 2.1")));
 
 	cell = list_head(session_context->pending_messages);
-	ereport(DEBUG5,	(errmsg("pool_pending_message_head_message - 2.2")));
-
 	m = (POOL_PENDING_MESSAGE *) lfirst(cell);
-	ereport(DEBUG5,	(errmsg("pool_pending_message_head_message - 2.3")));
-
-ereport(DEBUG5,
-    (errmsg("pool_pending_message_head_message: message type:%s message len:%d query:%s statement:%s portal:%s node_ids[0]:%d node_ids[1]:%d",
-            pool_pending_message_type_to_string(m->type),
-            m->contents_len, m->query, m->statement, m->portal,
-            m->node_ids[0], m->node_ids[1])));
-
 	message = copy_pending_message(m);
 	ereport(Elevel,
 			(errmsg("pool_pending_message_head_message: message type:%s message len:%d query:%s statement:%s portal:%s node_ids[0]:%d node_ids[1]:%d",
 					pool_pending_message_type_to_string(message->type),
 					message->contents_len, message->query, message->statement, message->portal,
 					message->node_ids[0], message->node_ids[1])));
-ereport(DEBUG5,	(errmsg("pool_pending_message_head_message - 3")));
 
 	MemoryContextSwitchTo(old_context);
 	return message;
@@ -1473,15 +1458,9 @@ static POOL_PENDING_MESSAGE * copy_pending_message(POOL_PENDING_MESSAGE * messag
 	POOL_PENDING_MESSAGE *msg;
 
 	msg = palloc(sizeof(POOL_PENDING_MESSAGE));
-		ereport(DEBUG5,	(errmsg("copy_pending_message")));
-
 	memcpy(msg, message, sizeof(POOL_PENDING_MESSAGE));
-		ereport(DEBUG5,	(errmsg("copy_pending_message 2")));
 	msg->contents = palloc(msg->contents_len);
-			ereport(DEBUG5,	(errmsg("copy_pending_message3")));
-
 	memcpy(msg->contents, message->contents, msg->contents_len);
-		ereport(DEBUG5,	(errmsg("copy_pending_message4")));
 
 	return msg;
 }

@@ -2000,11 +2000,6 @@ ReadyForQuery(POOL_CONNECTION * frontend,
 	char	   *query = NULL;
 	bool		got_estate = false;
 
-    ereport(DEBUG1,
-        (errmsg("processing ReadyForQuery"),
-         errdetail("Start")));
-
-
 	/*
 	 * It is possible that the "ignore until sync is received" flag was set if
 	 * we send sync to backend and the backend returns error. Let's reset the
@@ -2176,7 +2171,7 @@ ReadyForQuery(POOL_CONNECTION * frontend,
 				return POOL_END;
 
 			TSTATE(backend, i) = kind;
-			ereport(DEBUG1,
+			ereport(DEBUG5,
 					(errmsg("processing ReadyForQuery"),
 					 errdetail("transaction state '%c'(%02x)", state, state)));
 
@@ -2809,9 +2804,6 @@ ProcessFrontendResponse(POOL_CONNECTION * frontend,
 				pool_unset_ignore_till_sync();
 
 			status = Sync(frontend, backend, len, contents);
-			ereport(DEBUG1,
-                    (errmsg("finished processing Sync"),
-                     errdetail("ok")));
 			break;
 
 		case 'F':				/* FunctionCall */
@@ -2900,11 +2892,6 @@ ProcessBackendResponse(POOL_CONNECTION * frontend,
 	int			status = POOL_CONTINUE;
 	char		kind;
 
-
-    ereport(DEBUG5,
-            (errmsg("ProcessBackendResponse"),
-             errdetail("start")));
-
 	/* Get session context */
 	pool_get_session_context(false);
 
@@ -2930,13 +2917,8 @@ ProcessBackendResponse(POOL_CONNECTION * frontend,
 		return POOL_CONTINUE;
 	}
 
-ereport(DEBUG5,
-            (errmsg("ProcessBackendResponse"),
-             errdetail("pre-read_kind")));
 	read_kind_from_backend(frontend, backend, &kind);
-ereport(DEBUG5,
-            (errmsg("ProcessBackendResponse"),
-             errdetail("post-read_kind")));
+
 	/*
 	 * Sanity check
 	 */

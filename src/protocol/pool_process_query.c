@@ -2125,7 +2125,7 @@ do_query(POOL_CONNECTION * backend, char *query, POOL_SELECT_RESULT * *result, i
 		switch (kind)
 		{
 			case 'Z':			/* Ready for query */
-				ereport(DEBUG1,
+				ereport(DEBUG5,
 						(errmsg("do_query: received READY FOR QUERY ('%c')", kind)));
 				if (!doing_extended)
 					return;
@@ -3207,17 +3207,12 @@ read_kind_from_backend(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backen
 	int			num_executed_nodes = 0;
 	int			first_node = -1;
 
-	ereport(DEBUG5, (errmsg("read_kind: step1")));
-
 	memset(kind_map, 0, sizeof(kind_map));
 
 	if (SL_MODE && pool_get_session_context(true) && pool_is_doing_extended_query_message())
 	{
-	ereport(DEBUG5, (errmsg("read_kind: step2")));
 		msg = pool_pending_message_head_message();
-	ereport(DEBUG5, (errmsg("read_kind: step2a")));
 		previous_message = pool_pending_message_get_previous_message();
-	ereport(DEBUG5, (errmsg("read_kind: step2b")));
 		if (!msg)
 		{
 			ereport(DEBUG5,
@@ -3257,28 +3252,28 @@ read_kind_from_backend(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backen
 		{
 			if (msg->type == POOL_SYNC)
 			{
-				ereport(DEBUG1,
+				ereport(DEBUG5,
 						(errmsg("read_kind_from_backend: sync pending message exists")));
 				pool_unset_ignore_till_sync();
 			}
 
-				ereport(DEBUG1,
-						(errmsg("read_kind_from_backend: pending message exists. query context: %p",
-								msg->query_context)));
-				pool_pending_message_set_previous_message(msg);
-				pool_pending_message_query_context_dest_set(msg, msg->query_context);
-				session_context->query_context = msg->query_context;
+            ereport(DEBUG5,
+                    (errmsg("read_kind_from_backend: pending message exists. query context: %p",
+                            msg->query_context)));
+            pool_pending_message_set_previous_message(msg);
+            pool_pending_message_query_context_dest_set(msg, msg->query_context);
+            session_context->query_context = msg->query_context;
 
-				ereport(DEBUG1,
-						(errmsg("read_kind_from_backend: where_to_send[0]:%d [1]:%d",
-								msg->query_context->where_to_send[0],
-								msg->query_context->where_to_send[1])));
+            ereport(DEBUG5,
+                    (errmsg("read_kind_from_backend: where_to_send[0]:%d [1]:%d",
+                            msg->query_context->where_to_send[0],
+                            msg->query_context->where_to_send[1])));
 
-				pool_set_query_in_progress();
+            pool_set_query_in_progress();
 
 		}
 	}
-ereport(DEBUG5, (errmsg("read_kind: step2.5")));
+
 	if (MAIN_REPLICA)
 	{
 		ereport(DEBUG5,
@@ -3306,17 +3301,12 @@ ereport(DEBUG5, (errmsg("read_kind: step2.5")));
 		}
 		pool_unread(CONNECTION(backend, MAIN_NODE_ID), &kind, sizeof(kind));
 	}
-ereport(DEBUG1, (errmsg("read_kind: step3")));
+
 	for (i = 0; i < NUM_BACKENDS; i++)
 	{
 		/* initialize degenerate record */
 		degenerate_node[i] = 0;
 		kind_list[i] = 0;
-
-				ereport(DEBUG1,
-						(errmsg("reading backend step 0"),
-						 errdetail("backend:%d", i)));
-
 
 		if (VALID_BACKEND(i))
 		{
@@ -3330,12 +3320,6 @@ ereport(DEBUG1, (errmsg("read_kind: step3")));
 				char	   *p,
 						   *value;
 				int			len;
-
-				ereport(DEBUG1,
-						(errmsg("reading backend step 1"),
-						 errdetail("backend:%d", i)));
-
-
 
 				kind = 0;
 				if (pool_read(CONNECTION(backend, i), &kind, 1))
@@ -3354,7 +3338,7 @@ ereport(DEBUG1, (errmsg("read_kind: step3")));
 							 errdetail("kind == 0")));
 				}
 
-				ereport(DEBUG1,
+				ereport(DEBUG5,
 						(errmsg("reading backend data packet kind"),
 						 errdetail("backend:%d kind:'%c'", i, kind)));
 
@@ -3411,7 +3395,7 @@ ereport(DEBUG1, (errmsg("read_kind: step3")));
 
 			kind_list[i] = kind;
 
-			ereport(DEBUG1,
+			ereport(DEBUG5,
 					(errmsg("reading backend data packet kind"),
 					 errdetail("backend:%d of %d kind = '%c'", i, NUM_BACKENDS, kind_list[i])));
 
@@ -3427,7 +3411,7 @@ ereport(DEBUG1, (errmsg("read_kind: step3")));
 			kind_list[i] = 0;
 	}
 
-	ereport(DEBUG1,
+	ereport(DEBUG5,
 			(errmsg("read_kind_from_backend max_count:%f num_executed_nodes:%d",
 					max_count, num_executed_nodes)));
 
@@ -3762,7 +3746,7 @@ ereport(DEBUG1, (errmsg("read_kind: step3")));
 			 (*decided_kind == 'D' || *decided_kind == 'E' || *decided_kind == 'N')) ||
 			(msg->type == POOL_DESCRIBE && *decided_kind == 't'))
 		{
-			ereport(DEBUG1,
+			ereport(DEBUG5,
 					(errmsg("read_kind_from_backend: pending message was left")));
 		}
 		else
@@ -3772,12 +3756,12 @@ ereport(DEBUG1, (errmsg("read_kind: step3")));
 			if (msg->type == POOL_CLOSE)
 			{
 				/* Pending message will be pulled out in CloseComplete() */
-				ereport(DEBUG1,
+				ereport(DEBUG5,
 						(errmsg("read_kind_from_backend: pending message was not pulled out because message type is CloseComplete")));
 			}
 			else
 			{
-				ereport(DEBUG1,
+				ereport(DEBUG5,
 						(errmsg("read_kind_from_backend: pending message was pulled out")));
 				pending_message = pool_pending_message_pull_out();
 				pool_check_pending_message_and_reply(msg->type, *decided_kind);
