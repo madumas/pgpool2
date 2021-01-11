@@ -1473,9 +1473,15 @@ static POOL_PENDING_MESSAGE * copy_pending_message(POOL_PENDING_MESSAGE * messag
 	POOL_PENDING_MESSAGE *msg;
 
 	msg = palloc(sizeof(POOL_PENDING_MESSAGE));
+		ereport(DEBUG1,	(errmsg("copy_pending_message")));
+
 	memcpy(msg, message, sizeof(POOL_PENDING_MESSAGE));
+		ereport(DEBUG1,	(errmsg("copy_pending_message 2")));
 	msg->contents = palloc(msg->contents_len);
+			ereport(DEBUG1,	(errmsg("copy_pending_message3")));
+
 	memcpy(msg->contents, message->contents, msg->contents_len);
+		ereport(DEBUG1,	(errmsg("copy_pending_message"4)));
 
 	return msg;
 }
