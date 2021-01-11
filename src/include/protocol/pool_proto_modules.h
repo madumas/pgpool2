@@ -68,6 +68,10 @@ extern POOL_STATUS Describe(POOL_CONNECTION * frontend,
 							POOL_CONNECTION_POOL * backend,
 							int len, char *contents);
 
+extern POOL_STATUS Sync(POOL_CONNECTION * frontend,
+							POOL_CONNECTION_POOL * backend,
+							int len, char *contents);
+
 extern POOL_STATUS Close(POOL_CONNECTION * frontend,
 						 POOL_CONNECTION_POOL * backend,
 						 int len, char *contents);
