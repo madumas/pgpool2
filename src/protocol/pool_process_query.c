@@ -3309,7 +3309,7 @@ ereport(DEBUG5, (errmsg("read_kind: step2.5")));
 		}
 		pool_unread(CONNECTION(backend, MAIN_NODE_ID), &kind, sizeof(kind));
 	}
-ereport(DEBUG5, (errmsg("read_kind: step3")));
+ereport(DEBUG1, (errmsg("read_kind: step3")));
 	for (i = 0; i < NUM_BACKENDS; i++)
 	{
 		/* initialize degenerate record */
@@ -3403,7 +3403,7 @@ ereport(DEBUG5, (errmsg("read_kind: step3")));
 
 			kind_list[i] = kind;
 
-			ereport(DEBUG5,
+			ereport(DEBUG1,
 					(errmsg("reading backend data packet kind"),
 					 errdetail("backend:%d of %d kind = '%c'", i, NUM_BACKENDS, kind_list[i])));
 
