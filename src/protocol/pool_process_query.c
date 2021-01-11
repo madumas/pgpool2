@@ -3316,6 +3316,11 @@ ereport(DEBUG1, (errmsg("read_kind: step3")));
 		degenerate_node[i] = 0;
 		kind_list[i] = 0;
 
+				ereport(DEBUG1,
+						(errmsg("reading backend step 0"),
+						 errdetail("backend:%d", i)));
+
+
 		if (VALID_BACKEND(i))
 		{
 			num_executed_nodes++;
@@ -3328,6 +3333,12 @@ ereport(DEBUG1, (errmsg("read_kind: step3")));
 				char	   *p,
 						   *value;
 				int			len;
+
+				ereport(DEBUG1,
+						(errmsg("reading backend step 1"),
+						 errdetail("backend:%d", i)));
+
+
 
 				kind = 0;
 				if (pool_read(CONNECTION(backend, i), &kind, 1))
