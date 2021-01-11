@@ -1347,6 +1347,11 @@ ereport(DEBUG1,	(errmsg("pool_pending_message_head_message - 1")));
 	m = (POOL_PENDING_MESSAGE *) lfirst(cell);
 	ereport(DEBUG1,	(errmsg("pool_pending_message_head_message - 2.3")));
 
+ereport(DEBUG1,
+    (errmsg("pool_pending_message_head_message: message type:%s message len:%d query:%s statement:%s portal:%s node_ids[0]:%d node_ids[1]:%d",
+            pool_pending_message_type_to_string(m->type),
+            m->contents_len, m->query, m->statement, m->portal,
+            m->node_ids[0], m->node_ids[1])));
 
 	message = copy_pending_message(m);
 	ereport(Elevel,
