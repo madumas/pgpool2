@@ -1805,12 +1805,6 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
         pool_pending_message_free_pending_message(pmsg);
 
 		pool_unset_query_in_progress();
-
-	}
-
-
-    if (SL_MODE)
-    {
         /*
          * From now on suspend to read from frontend until we receive
          * ready for query message from backend.
