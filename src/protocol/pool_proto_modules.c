@@ -4027,10 +4027,9 @@ pool_discard_except_sync_and_ready_for_query(POOL_CONNECTION * frontend,
 				contents = pool_read2(frontend, len);
 			if (kind == 'S')
 			{
-				msg = pool_pending_message_create('S', 0, NULL);
-				pool_pending_message_add(msg);
-				pool_pending_message_free_pending_message(msg);
+			ereport(DEBUG1, (errmsg("pool_discard_except_sync_and_ready_for_query: Sending extra Sync")));
 				SimpleForwardToBackend(kind, frontend, backend, len, contents);
+				Sync(frontend, backend, len, contents);
 				break;
 			}
 		}
