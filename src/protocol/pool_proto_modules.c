@@ -4056,8 +4056,11 @@ pool_discard_except_sync_and_ready_for_query(POOL_CONNECTION * frontend,
 	}
 	while (pmsg);
 
-	pool_pending_message_reset_previous_message();
+ereport(DEBUG1, (errmsg("Pre pool_pending_message_reset_previous_message")));
 
+
+	pool_pending_message_reset_previous_message();
+ereport(DEBUG1, (errmsg("Post pool_pending_message_reset_previous_message")));
 	/* Discard read buffer except "Ready for query" */
 	for (i = 0; i < NUM_BACKENDS; i++)
 	{
@@ -4066,10 +4069,12 @@ pool_discard_except_sync_and_ready_for_query(POOL_CONNECTION * frontend,
 			char		kind;
 			int			len;
 			int			sts;
-
+ereport(DEBUG1, (errmsg("pool_read_buffer_is_empty")));
 			while (!pool_read_buffer_is_empty(CONNECTION(backend, i)))
 			{
+			ereport(DEBUG1, (errmsg("pool_read_buffer_is_empty -1 ")));
 				sts = pool_read(CONNECTION(backend, i), &kind, sizeof(kind));
+				ereport(DEBUG1, (errmsg("pool_read_buffer_is_empty -2")));
 				if (sts < 0 || kind == '\0')
 				{
 					ereport(DEBUG1,
@@ -4101,6 +4106,7 @@ pool_discard_except_sync_and_ready_for_query(POOL_CONNECTION * frontend,
 			}
 		}
 	}
+	ereport(DEBUG1, (errmsg("pool_read_buffer_is_empty 3")));
 }
 
 /*
