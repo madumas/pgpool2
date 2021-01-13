@@ -3043,10 +3043,10 @@ ereport(DEBUG1,	(errmsg("processing backend response - 1.4")));
 				if (pool_is_doing_extended_query_message())
 				{
 					pool_set_ignore_till_sync();
-					pool_unset_query_in_progress();
 					pool_unset_suspend_reading_from_frontend();
 					if (SL_MODE)
 						pool_discard_except_sync_and_ready_for_query(frontend, backend);
+					pool_unset_query_in_progress();
 				}
 				break;
 
