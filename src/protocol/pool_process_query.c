@@ -186,9 +186,9 @@ pool_process_query(POOL_CONNECTION * frontend,
 				return POOL_CONTINUE;
 			}
 		}
-
+ereport(DEBUG1, (errmsg("pool_process_query 1")));
 		check_stop_request();
-
+ereport(DEBUG1, (errmsg("pool_process_query 2")));
 		/*
 		 * If we are in recovery and client_idle_limit_in_recovery is -1, then
 		 * exit immediately.
@@ -200,7 +200,7 @@ pool_process_query(POOL_CONNECTION * frontend,
 					 errmsg("connection terminated due to online recovery"),
 					 errdetail("child connection forced to terminate due to client_idle_limit_in_recovery = -1")));
 		}
-
+ereport(DEBUG1, (errmsg("pool_process_query 3")));
 		/*
 		 * If we are not processing a query, now is the time to extract
 		 * pending data from buffer stack if any.
@@ -215,7 +215,7 @@ pool_process_query(POOL_CONNECTION * frontend,
 					pool_pop(CONNECTION(backend, i), &plen);
 			}
 		}
-
+ereport(DEBUG1, (errmsg("pool_process_query 4")));
 		/*
 		 * If we are processing query, process it.  Even if we are not
 		 * processing query, process backend response if there's pending data
@@ -445,7 +445,7 @@ pool_process_query(POOL_CONNECTION * frontend,
 				}
 			}
 		}
-
+ereport(DEBUG1, (errmsg("pool_process_query 5")));
 		/* reload config file */
 		if (got_sighup)
 		{
@@ -458,6 +458,7 @@ pool_process_query(POOL_CONNECTION * frontend,
 			got_sighup = 0;
 		}
 	}
+	ereport(DEBUG1, (errmsg("pool_process_query 6")));
 }
 
 /*
