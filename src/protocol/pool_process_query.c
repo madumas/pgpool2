@@ -3207,7 +3207,7 @@ read_kind_from_backend(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backen
 
 	int			num_executed_nodes = 0;
 	int			first_node = -1;
-
+ereport(DEBUG1,	(errmsg("read_kind 1")));
 	memset(kind_map, 0, sizeof(kind_map));
 
 	if (SL_MODE && pool_get_session_context(true) && pool_is_doing_extended_query_message())
