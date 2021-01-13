@@ -1994,6 +1994,8 @@ ReadyForQuery(POOL_CONNECTION * frontend,
 	char	   *query = NULL;
 	bool		got_estate = false;
 
+	ereport(LOG, (errmsg("Ready For Query")));
+
 	/*
 	 * It is possible that the "ignore until sync is received" flag was set if
 	 * we send sync to backend and the backend returns error. Let's reset the
@@ -2303,7 +2305,7 @@ ReadyForQuery(POOL_CONNECTION * frontend,
 	 * Show ps idle status
 	 */
 	pool_ps_idle_display(backend);
-
+ereport(LOG, (errmsg("Ready For Query end")));
 	return POOL_CONTINUE;
 }
 
