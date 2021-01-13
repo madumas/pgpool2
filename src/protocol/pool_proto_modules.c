@@ -2892,7 +2892,7 @@ ereport(DEBUG1,
 			(errmsg("processing backend response - 1")));
 	/* Get session context */
 	pool_get_session_context(false);
-
+ereport(DEBUG1,	(errmsg("processing backend response - 1.1")));
 	if (pool_is_ignore_till_sync())
 	{
 		if (pool_is_query_in_progress())
@@ -2908,15 +2908,15 @@ ereport(DEBUG1,
 			return POOL_CONTINUE;
 		}
 	}
-
+ereport(DEBUG1,	(errmsg("processing backend response - 1.2")));
 	if (pool_is_skip_reading_from_backends())
 	{
 		pool_unset_skip_reading_from_backends();
 		return POOL_CONTINUE;
 	}
-
+ereport(DEBUG1,	(errmsg("processing backend response - 1.3")));
 	read_kind_from_backend(frontend, backend, &kind);
-
+ereport(DEBUG1,	(errmsg("processing backend response - 1.4")));
 	/*
 	 * Sanity check
 	 */
