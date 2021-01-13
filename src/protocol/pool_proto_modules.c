@@ -3046,7 +3046,8 @@ ereport(DEBUG1,	(errmsg("processing backend response - 1.4")));
 					pool_unset_suspend_reading_from_frontend();
 					if (SL_MODE)
 						pool_discard_except_sync_and_ready_for_query(frontend, backend);
-					pool_unset_query_in_progress();
+				    else
+					    pool_unset_query_in_progress();
 				}
 				break;
 
@@ -4032,7 +4033,7 @@ pool_discard_except_sync_and_ready_for_query(POOL_CONNECTION * frontend,
 			if (kind == 'S')
 			{
 			ereport(DEBUG1, (errmsg("pool_discard_except_sync_and_ready_for_query: Sending extra Sync")));
-				Sync(frontend, backend, len, contents);
+				//Sync(frontend, backend, len, contents);
 				break;
 			}
 		}
