@@ -2888,6 +2888,8 @@ ProcessBackendResponse(POOL_CONNECTION * frontend,
 	int			status = POOL_CONTINUE;
 	char		kind;
 
+ereport(DEBUG1,
+			(errmsg("processing backend response - 1")));
 	/* Get session context */
 	pool_get_session_context(false);
 
@@ -2925,7 +2927,7 @@ ProcessBackendResponse(POOL_CONNECTION * frontend,
 				 errmsg("unable to process backend response"),
 				 errdetail("invalid message kind sent by backend connection")));
 	}
-	ereport(DEBUG5,
+	ereport(DEBUG1,
 			(errmsg("processing backend response"),
 			 errdetail("received kind '%c'(%02x) from backend", kind, kind)));
 
@@ -2943,7 +2945,7 @@ ProcessBackendResponse(POOL_CONNECTION * frontend,
 				break;
 
 			case 'Z':			/* ReadyForQuery */
-				ereport(DEBUG5,
+				ereport(DEBUG1,
 						(errmsg("processing backend response"),
 						 errdetail("Ready For Query received")));
 				pool_unset_suspend_reading_from_frontend();
