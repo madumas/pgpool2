@@ -1755,6 +1755,7 @@ Sync(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backend,
             /* Add pending message */
             pool_unset_query_in_progress();
             pmsg = pool_pending_message_create('S', 0, NULL);
+            pmsg->query_context = NULL;
             pool_pending_message_add(pmsg);
             pool_pending_message_free_pending_message(pmsg);
         } else if (!pool_is_query_in_progress())
