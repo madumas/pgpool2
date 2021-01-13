@@ -3216,7 +3216,7 @@ ereport(DEBUG1,	(errmsg("read_kind 1")));
 		previous_message = pool_pending_message_get_previous_message();
 		if (!msg)
 		{
-			ereport(DEBUG5,
+			ereport(DEBUG1,
 					(errmsg("read_kind_from_backend: no pending message")));
 
 			/*
@@ -3253,19 +3253,19 @@ ereport(DEBUG1,	(errmsg("read_kind 1")));
 		{
 			if (msg->type == POOL_SYNC)
 			{
-				ereport(DEBUG5,
+				ereport(DEBUG1,
 						(errmsg("read_kind_from_backend: sync pending message exists")));
 				pool_unset_ignore_till_sync();
 			}
 
-            ereport(DEBUG5,
+            ereport(DEBUG1,
                     (errmsg("read_kind_from_backend: pending message exists. query context: %p",
                             msg->query_context)));
             pool_pending_message_set_previous_message(msg);
             pool_pending_message_query_context_dest_set(msg, msg->query_context);
             session_context->query_context = msg->query_context;
 
-            ereport(DEBUG5,
+            ereport(DEBUG1,
                     (errmsg("read_kind_from_backend: where_to_send[0]:%d [1]:%d",
                             msg->query_context->where_to_send[0],
                             msg->query_context->where_to_send[1])));
@@ -3277,7 +3277,7 @@ ereport(DEBUG1,	(errmsg("read_kind 1")));
 
 	if (MAIN_REPLICA)
 	{
-		ereport(DEBUG5,
+		ereport(DEBUG1,
 				(errmsg("reading backend data packet kind"),
 				 errdetail("main node id: %d", MAIN_NODE_ID)));
 
@@ -3302,7 +3302,7 @@ ereport(DEBUG1,	(errmsg("read_kind 1")));
 		}
 		pool_unread(CONNECTION(backend, MAIN_NODE_ID), &kind, sizeof(kind));
 	}
-
+ereport(DEBUG1,	(errmsg("read_kind 2")));
 	for (i = 0; i < NUM_BACKENDS; i++)
 	{
 		/* initialize degenerate record */
@@ -3339,7 +3339,7 @@ ereport(DEBUG1,	(errmsg("read_kind 1")));
 							 errdetail("kind == 0")));
 				}
 
-				ereport(DEBUG5,
+				ereport(DEBUG1,
 						(errmsg("reading backend data packet kind"),
 						 errdetail("backend:%d kind:'%c'", i, kind)));
 
@@ -3412,7 +3412,7 @@ ereport(DEBUG1,	(errmsg("read_kind 1")));
 			kind_list[i] = 0;
 	}
 
-	ereport(DEBUG5,
+	ereport(DEBUG1,
 			(errmsg("read_kind_from_backend max_count:%f num_executed_nodes:%d",
 					max_count, num_executed_nodes)));
 
