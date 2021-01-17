@@ -1995,8 +1995,6 @@ ReadyForQuery(POOL_CONNECTION * frontend,
 	char	   *query = NULL;
 	bool		got_estate = false;
 
-	ereport(LOG, (errmsg("Ready For Query")));
-
 	/*
 	 * It is possible that the "ignore until sync is received" flag was set if
 	 * we send sync to backend and the backend returns error. Let's reset the
@@ -2306,7 +2304,7 @@ ReadyForQuery(POOL_CONNECTION * frontend,
 	 * Show ps idle status
 	 */
 	pool_ps_idle_display(backend);
-ereport(LOG, (errmsg("Ready For Query end")));
+
 	return POOL_CONTINUE;
 }
 
@@ -2889,11 +2887,9 @@ ProcessBackendResponse(POOL_CONNECTION * frontend,
 	int			status = POOL_CONTINUE;
 	char		kind;
 
-ereport(DEBUG1,
-			(errmsg("processing backend response - 1")));
 	/* Get session context */
 	pool_get_session_context(false);
-ereport(DEBUG1,	(errmsg("processing backend response - 1.1")));
+
 	if (pool_is_ignore_till_sync())
 	{
 		if (pool_is_query_in_progress())
@@ -2909,15 +2905,15 @@ ereport(DEBUG1,	(errmsg("processing backend response - 1.1")));
 			return POOL_CONTINUE;
 		}
 	}
-ereport(DEBUG1,	(errmsg("processing backend response - 1.2")));
+
 	if (pool_is_skip_reading_from_backends())
 	{
 		pool_unset_skip_reading_from_backends();
 		return POOL_CONTINUE;
 	}
-ereport(DEBUG1,	(errmsg("processing backend response - 1.3")));
+
 	read_kind_from_backend(frontend, backend, &kind);
-ereport(DEBUG1,	(errmsg("processing backend response - 1.4")));
+
 	/*
 	 * Sanity check
 	 */
@@ -2928,7 +2924,7 @@ ereport(DEBUG1,	(errmsg("processing backend response - 1.4")));
 				 errmsg("unable to process backend response"),
 				 errdetail("invalid message kind sent by backend connection")));
 	}
-	ereport(DEBUG1,
+	ereport(DEBUG5,
 			(errmsg("processing backend response"),
 			 errdetail("received kind '%c'(%02x) from backend", kind, kind)));
 
@@ -2946,7 +2942,7 @@ ereport(DEBUG1,	(errmsg("processing backend response - 1.4")));
 				break;
 
 			case 'Z':			/* ReadyForQuery */
-				ereport(DEBUG1,
+				ereport(DEBUG5,
 						(errmsg("processing backend response"),
 						 errdetail("Ready For Query received")));
 				pool_unset_suspend_reading_from_frontend();
@@ -4033,7 +4029,7 @@ pool_discard_except_sync_and_ready_for_query(POOL_CONNECTION * frontend,
 				contents = pool_read2(frontend, len);
 			if (kind == 'S')
 			{
-			ereport(DEBUG1, (errmsg("pool_discard_except_sync_and_ready_for_query: Sending extra Sync")));
+			ereport(DEBUG5, (errmsg("pool_discard_except_sync_and_ready_for_query: Sending extra Sync")));
 				Sync(frontend, backend, len, contents);
 				break;
 			}
@@ -4060,11 +4056,8 @@ pool_discard_except_sync_and_ready_for_query(POOL_CONNECTION * frontend,
 	}
 	while (pmsg);
 
-ereport(DEBUG1, (errmsg("Pre pool_pending_message_reset_previous_message")));
-
-
 	pool_pending_message_reset_previous_message();
-ereport(DEBUG1, (errmsg("Post pool_pending_message_reset_previous_message")));
+
 	/* Discard read buffer except "Ready for query" */
 	for (i = 0; i < NUM_BACKENDS; i++)
 	{
@@ -4073,12 +4066,10 @@ ereport(DEBUG1, (errmsg("Post pool_pending_message_reset_previous_message")));
 			char		kind;
 			int			len;
 			int			sts;
-ereport(DEBUG1, (errmsg("pool_read_buffer_is_empty")));
+
 			while (!pool_read_buffer_is_empty(CONNECTION(backend, i)))
 			{
-			ereport(DEBUG1, (errmsg("pool_read_buffer_is_empty -1 ")));
 				sts = pool_read(CONNECTION(backend, i), &kind, sizeof(kind));
-				ereport(DEBUG1, (errmsg("pool_read_buffer_is_empty -2")));
 				if (sts < 0 || kind == '\0')
 				{
 					ereport(DEBUG1,
@@ -4110,7 +4101,6 @@ ereport(DEBUG1, (errmsg("pool_read_buffer_is_empty")));
 			}
 		}
 	}
-	ereport(DEBUG1, (errmsg("pool_read_buffer_is_empty 3")));
 }
 
 /*

@@ -186,9 +186,9 @@ pool_process_query(POOL_CONNECTION * frontend,
 				return POOL_CONTINUE;
 			}
 		}
-ereport(DEBUG1, (errmsg("pool_process_query 1")));
+
 		check_stop_request();
-ereport(DEBUG1, (errmsg("pool_process_query 2")));
+
 		/*
 		 * If we are in recovery and client_idle_limit_in_recovery is -1, then
 		 * exit immediately.
@@ -200,7 +200,7 @@ ereport(DEBUG1, (errmsg("pool_process_query 2")));
 					 errmsg("connection terminated due to online recovery"),
 					 errdetail("child connection forced to terminate due to client_idle_limit_in_recovery = -1")));
 		}
-ereport(DEBUG1, (errmsg("pool_process_query 3")));
+
 		/*
 		 * If we are not processing a query, now is the time to extract
 		 * pending data from buffer stack if any.
@@ -215,7 +215,7 @@ ereport(DEBUG1, (errmsg("pool_process_query 3")));
 					pool_pop(CONNECTION(backend, i), &plen);
 			}
 		}
-ereport(DEBUG1, (errmsg("pool_process_query 4")));
+
 		/*
 		 * If we are processing query, process it.  Even if we are not
 		 * processing query, process backend response if there's pending data
@@ -445,7 +445,7 @@ ereport(DEBUG1, (errmsg("pool_process_query 4")));
 				}
 			}
 		}
-ereport(DEBUG1, (errmsg("pool_process_query 5")));
+
 		/* reload config file */
 		if (got_sighup)
 		{
@@ -458,7 +458,6 @@ ereport(DEBUG1, (errmsg("pool_process_query 5")));
 			got_sighup = 0;
 		}
 	}
-	ereport(DEBUG1, (errmsg("pool_process_query 6")));
 }
 
 /*
@@ -3207,7 +3206,7 @@ read_kind_from_backend(POOL_CONNECTION * frontend, POOL_CONNECTION_POOL * backen
 
 	int			num_executed_nodes = 0;
 	int			first_node = -1;
-ereport(DEBUG1,	(errmsg("read_kind 1")));
+
 	memset(kind_map, 0, sizeof(kind_map));
 
 	if (SL_MODE && pool_get_session_context(true) && pool_is_doing_extended_query_message())
@@ -3216,7 +3215,7 @@ ereport(DEBUG1,	(errmsg("read_kind 1")));
 		previous_message = pool_pending_message_get_previous_message();
 		if (!msg)
 		{
-			ereport(DEBUG1,
+			ereport(DEBUG5,
 					(errmsg("read_kind_from_backend: no pending message")));
 
 			/*
@@ -3253,12 +3252,12 @@ ereport(DEBUG1,	(errmsg("read_kind 1")));
 		{
 			if (msg->type == POOL_SYNC)
 			{
-				ereport(DEBUG1,
+				ereport(DEBUG5,
 						(errmsg("read_kind_from_backend: sync pending message exists")));
 				pool_unset_ignore_till_sync();
 			}
 
-            ereport(DEBUG1,
+            ereport(DEBUG5,
                     (errmsg("read_kind_from_backend: pending message exists. query context: %p",
                             msg->query_context)));
             if(msg->query_context) {
@@ -3266,12 +3265,12 @@ ereport(DEBUG1,	(errmsg("read_kind 1")));
                 pool_pending_message_query_context_dest_set(msg, msg->query_context);
                 session_context->query_context = msg->query_context;
 
-                ereport(DEBUG1,
+                ereport(DEBUG5,
                         (errmsg("read_kind_from_backend: where_to_send[0]:%d [1]:%d",
                                 msg->query_context->where_to_send[0],
                                 msg->query_context->where_to_send[1])));
             } else {
-                ereport(DEBUG1,(errmsg("read_kind_from_backend: msg->query_context is null")));
+                ereport(DEBUG5,(errmsg("read_kind_from_backend: msg->query_context is null")));
                 session_context->query_context = NULL;
             }
             pool_set_query_in_progress();
@@ -3281,7 +3280,7 @@ ereport(DEBUG1,	(errmsg("read_kind 1")));
 
 	if (MAIN_REPLICA)
 	{
-		ereport(DEBUG1,
+		ereport(DEBUG5,
 				(errmsg("reading backend data packet kind"),
 				 errdetail("main node id: %d", MAIN_NODE_ID)));
 
@@ -3306,7 +3305,7 @@ ereport(DEBUG1,	(errmsg("read_kind 1")));
 		}
 		pool_unread(CONNECTION(backend, MAIN_NODE_ID), &kind, sizeof(kind));
 	}
-ereport(DEBUG1,	(errmsg("read_kind 2")));
+
 	for (i = 0; i < NUM_BACKENDS; i++)
 	{
 		/* initialize degenerate record */
@@ -3343,7 +3342,7 @@ ereport(DEBUG1,	(errmsg("read_kind 2")));
 							 errdetail("kind == 0")));
 				}
 
-				ereport(DEBUG1,
+				ereport(DEBUG5,
 						(errmsg("reading backend data packet kind"),
 						 errdetail("backend:%d kind:'%c'", i, kind)));
 
@@ -3416,7 +3415,7 @@ ereport(DEBUG1,	(errmsg("read_kind 2")));
 			kind_list[i] = 0;
 	}
 
-	ereport(DEBUG1,
+	ereport(DEBUG5,
 			(errmsg("read_kind_from_backend max_count:%f num_executed_nodes:%d",
 					max_count, num_executed_nodes)));
 
